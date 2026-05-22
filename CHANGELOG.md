@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.0] - 2026-05-22
+
+### Fixed
+- Conflicto `--stealthy` + `aggressive` nunca se mostraba ni deshabilitaba el botón Copiar — `isStealthy` se computaba después de que `hasConflict` ya estaba fijado; movido antes de la evaluación
+- Rutas de archivo (`--usernames`, `--passwords`, `--output`) y credenciales (`--proxy-auth`, `--http-auth`) con espacios no se cotizaban para la shell — ahora se envuelven en comillas simples automáticamente
+- `setVersion` aplicaba `display:none` a elementos `<option>` vía el loop `[data-v4only]`, lo cual Firefox ignora; el loop ahora salta `<option>` (el `disabled` explícito ya era el guard funcional correcto)
+
+---
+
 ## [1.3.0] - 2026-05-21
 
 ### Fixed

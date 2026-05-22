@@ -1402,8 +1402,8 @@ function setVersion(v) {
       ? (v === 4 ? "v4.0 &check;" : "v4.0")
       : (v === 3 ? "v3.x &check;" : "v3.x");
   });
-  document.querySelectorAll("[data-v4only]").forEach(el => el.style.display = v === 4 ? "" : "none");
-  document.querySelectorAll("[data-v3only]").forEach(el => el.style.display = v === 3 ? "" : "none");
+  document.querySelectorAll("[data-v4only]").forEach(el => { if (el.tagName !== "OPTION") el.style.display = v === 4 ? "" : "none"; });
+  document.querySelectorAll("[data-v3only]").forEach(el => { if (el.tagName !== "OPTION") el.style.display = v === 3 ? "" : "none"; });
   const jsonlOpt = document.querySelector("#outputFormat option[data-v4only]");
   if (jsonlOpt) {
     jsonlOpt.disabled = v !== 4;
@@ -1436,6 +1436,7 @@ function setRadio(gId, value, el) {
 const v4 = () => S.version === 4;
 const $v = id => (document.getElementById(id)?.value || "").trim();
 const $c = id => document.getElementById(id)?.checked || false;
+const shellQuote = v => v.includes(" ") ? `'${v}'` : v;
 
 /* ── Generate command ── */
 function generate() {
@@ -1449,9 +1450,10 @@ function generate() {
   const p = ["wpscan"];
   p.push(`--url ${url || "<URL>"}`);
   if (apiToken)       p.push(`--api-token ${apiToken}`);
-  if (wpAuth && v4()) p.push(`--wp-auth ${wpAuth.includes(" ") ? `'${wpAuth}'` : wpAuth}`);
+  if (wpAuth && v4()) p.push(`--wp-auth ${shellQuote(wpAuth)}`);
 
   // Enumeration — detect incompatible groups in one pass
+  const isStealthy = $c("stealthy");
   const sel = [...document.querySelectorAll("#enumGrid input:checked")].map(i => i.value);
   const conflicts    = [];
   const conflictVals = new Set();
@@ -1462,6 +1464,10 @@ function generate() {
       hits.forEach(v => conflictVals.add(v));
     }
   });
+  if (isStealthy && S.detectionMode === "aggressive") {
+    conflicts.push("--stealthy implica passive pero el modo de detección es aggressive");
+    conflictVals.add("__stealthy_aggressive__");
+  }
   document.querySelectorAll("#enumGrid .check-item").forEach(item =>
     item.classList.toggle("conflict", conflictVals.has(item.dataset.val))
   );
@@ -1493,19 +1499,12 @@ function generate() {
     if (mappedSel.length) p.push(`--enumerate ${mappedSel.join(",")}`);
   }
 
-  const isStealthy = $c("stealthy");
-
-  // Stealthy UI: dim implied toggles and warn on aggressive contradiction
+  // Stealthy UI: dim implied toggles
   const showImplied = d => d.style.display = isStealthy ? "" : "none";
   showImplied(document.getElementById("badge-randomUA"));
   showImplied(document.getElementById("badge-noBanner"));
   document.getElementById("ti-randomUA").classList.toggle("implied", isStealthy);
   document.getElementById("ti-noBanner").classList.toggle("implied", isStealthy);
-
-  if (isStealthy && S.detectionMode === "aggressive") {
-    conflicts.push("--stealthy implica passive pero el modo de detección es aggressive");
-    conflictVals.add("__stealthy_aggressive__");
-  }
 
   // Detection — skip --detection-mode passive if --stealthy already implies it
   const dm = S.detectionMode;
@@ -1534,16 +1533,16 @@ function generate() {
   if (v4()) { const ev = $v("excludeVulns"); if (ev) p.push(`--exclude-vulns ${ev}`); }
 
   // Brute force
-  const un = $v("usernames"); if (un) p.push(`--usernames ${un}`);
-  const pw = $v("passwords"); if (pw) p.push(`--passwords ${pw}`);
+  const un = $v("usernames"); if (un) p.push(`--usernames ${shellQuote(un)}`);
+  const pw = $v("passwords"); if (pw) p.push(`--passwords ${shellQuote(pw)}`);
   const pa = $v("passwordAttack"); if (pa) p.push(`--password-attack ${pa}`);
   if (v4()) { const sk = $v("wordlistSkip"); if (sk && sk !== "0") p.push(`--wordlist-skip ${sk}`); }
   const lu = $v("loginUri"); if (lu && lu !== "/wp-login.php") p.push(`--login-uri ${lu}`);
 
   // HTTP
   const pr = $v("proxy"); if (pr) p.push(`--proxy ${pr}`);
-  if (proxyAuth) p.push(`--proxy-auth ${proxyAuth}`);
-  if (httpAuth)  p.push(`--http-auth ${httpAuth}`);
+  if (proxyAuth) p.push(`--proxy-auth ${shellQuote(proxyAuth)}`);
+  if (httpAuth)  p.push(`--http-auth ${shellQuote(httpAuth)}`);
   const ua = $v("userAgent"); if (ua) p.push(`--user-agent "${ua}"`);
   if ($c("randomUserAgent") && !isStealthy) p.push("--random-user-agent");
   if ($c("disableTls"))                  p.push("--disable-tls-checks");
@@ -1553,7 +1552,7 @@ function generate() {
 
   // Output
   const fmt = $v("outputFormat"); if (fmt) p.push(`--format ${fmt}`);
-  const of  = $v("outputFile");   if (of)  p.push(`--output ${of}`);
+  const of  = $v("outputFile");   if (of)  p.push(`--output ${shellQuote(of)}`);
   if ($c("verbose"))  p.push("--verbose");
   if ($c("noBanner") && !isStealthy) p.push("--no-banner");
   if ($c("noUpdate")) p.push("--no-update");
