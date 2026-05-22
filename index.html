@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WPScan Command Generator</title>
+  <meta name="description" content="Genera comandos WPScan visualmente. Soporta v4.0 y v3.x. Sin servidor, sin dependencias, 100% offline." />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -265,6 +266,7 @@
     .check-item:hover { border-color: var(--border-focus); background: #f0f7ff; }
     .check-item.active  { border-color: var(--green); background: var(--green-bg); }
     .check-item.conflict { border-color: var(--red) !important; background: var(--red-bg) !important; }
+    .check-item.conflict .check-dot { border-color: var(--red) !important; background: var(--red) !important; }
     .check-item input { display: none; }
     .check-dot {
       width: 16px; height: 16px;
@@ -353,6 +355,13 @@
       gap: 4px;
     }
     .toggle-desc { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .toggle-item.implied { opacity: 0.45; pointer-events: none; }
+    .implied-badge {
+      font-size: 10px; font-weight: 600;
+      background: var(--purple-bg); border: 1px solid var(--purple-border);
+      color: var(--purple); border-radius: 3px; padding: 1px 5px;
+      margin-left: 4px; white-space: nowrap;
+    }
     .toggle {
       position: relative;
       width: 38px; height: 21px;
@@ -481,6 +490,9 @@
     .c-flag { color: #6cb6ff; }
     .c-val  { color: #f69d50; }
     .c-sec  { color: #ff938a; }
+    .command-wrapper.has-conflict { outline: 2px solid #f85149; }
+    .copy-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .copy-btn:disabled:hover { background: #373e47; border-color: #444c56; color: #cdd9e5; }
 
     @media (max-width: 660px) {
       .layout { grid-template-columns: 1fr; }
@@ -657,7 +669,7 @@
               <input type="checkbox" id="saveToken" style="display:none" onchange="onSaveTokenChange()" />
             </label>
           </div>
-          <div id="saveTokenNotice" style="display:none;margin-top:7px;padding:8px 11px;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:6px;font-size:12px;color:var(--yellow);display:none;align-items:flex-start;gap:8px">
+          <div id="saveTokenNotice" style="display:none;margin-top:7px;padding:8px 11px;background:var(--yellow-bg);border:1px solid var(--yellow-border);border-radius:6px;font-size:12px;color:var(--yellow);align-items:flex-start;gap:8px">
             <svg class="icon" width="13" height="13" style="flex-shrink:0;margin-top:1px"><use href="#ic-warn"/></svg>
             <span>El token se guardará en el <strong>localStorage</strong> de este navegador. No uses esta opción en equipos compartidos o públicos.</span>
           </div>
@@ -713,11 +725,27 @@
       <span class="card-chevron open"><svg class="icon" width="16" height="16"><use href="#ic-chevron"/></svg></span>
     </div>
     <div class="card-body">
-      <div id="enumConflict" style="display:none;margin-bottom:12px;padding:9px 12px;background:var(--red-bg);border:1px solid #ffb8b2;border-radius:6px;font-size:13px;color:var(--red);display:none;align-items:flex-start;gap:8px">
+      <div id="enumConflict" style="display:none;margin-bottom:12px;padding:9px 12px;background:var(--red-bg);border:1px solid #ffb8b2;border-radius:6px;font-size:13px;color:var(--red);align-items:flex-start;gap:8px">
         <svg class="icon" width="14" height="14" style="flex-shrink:0;margin-top:1px"><use href="#ic-warn"/></svg>
         <span id="enumConflictMsg"></span>
       </div>
       <div class="check-grid" id="enumGrid"></div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="flex:1">
+          <div class="field-label" style="margin-bottom:4px">
+            Rango de usuarios <span class="hint">-e u[1-X]</span>
+            <span class="tip" data-tip="Define hasta qué ID de usuario enumerar. Por defecto WPScan prueba del 1 al 25. Sitios grandes pueden tener más usuarios registrados.&#10;&#10;Ejemplo: 100 → enumera usuarios del ID 1 al 100.&#10;&#10;Solo aplica cuando la opción [u] está seleccionada arriba.">i</span>
+          </div>
+          <input type="number" id="userRange" placeholder="25 (default)" min="1" max="9999" oninput="generate()" style="max-width:180px" />
+        </div>
+        <div style="flex:1">
+          <div class="field-label" style="margin-bottom:4px">
+            Rango de medios <span class="hint">-e m[1-X]</span>
+            <span class="tip" data-tip="Define hasta qué ID de media enumerar. Por defecto WPScan prueba del 1 al 100.&#10;&#10;Solo aplica cuando la opción [m] está seleccionada arriba.">i</span>
+          </div>
+          <input type="number" id="mediaRange" placeholder="100 (default)" min="1" max="9999" oninput="generate()" style="max-width:180px" />
+        </div>
+      </div>
     </div>
   </div>
 
@@ -992,9 +1020,10 @@
         </div>
       </div>
       <div class="sep"></div>
-      <div class="toggle-item">
+      <div class="toggle-item" id="ti-randomUA">
         <div class="toggle-info">
           <div class="toggle-title">Random User-Agent
+            <span class="implied-badge" id="badge-randomUA" style="display:none">vía --stealthy</span>
             <span class="tip" data-tip="Cambia el User-Agent en cada request de forma aleatoria. Dificulta la detección por sistemas que monitorean patrones de UA consistentes.">i</span>
           </div>
           <div class="toggle-desc">Aleatoriza el UA en cada request</div>
@@ -1096,9 +1125,10 @@
           <div class="toggle-track"></div><div class="toggle-thumb"></div>
         </label>
       </div>
-      <div class="toggle-item">
+      <div class="toggle-item" id="ti-noBanner">
         <div class="toggle-info">
           <div class="toggle-title">No Banner
+            <span class="implied-badge" id="badge-noBanner" style="display:none">vía --stealthy</span>
             <span class="tip" data-tip="Suprime el banner ASCII de WPScan al inicio. Útil para output más limpio al parsear resultados o integrar en scripts automatizados.">i</span>
           </div>
           <div class="toggle-desc">Ocultar el banner ASCII al inicio</div>
@@ -1206,6 +1236,12 @@
 <script>
 /* ── State ── */
 const S = { version: 4, detectionMode: "passive" };
+
+/* ── Enum conflict groups (module-level constant) ── */
+const ENUM_GROUPS = [
+  { opts: ["vp","ap","p"], label: "plugins" },
+  { opts: ["vt","at","t"], label: "temas"   },
+];
 
 /* ── Enum option definitions ── */
 const ENUM_OPTS = [
@@ -1412,33 +1448,30 @@ function generate() {
   const p = ["wpscan"];
   p.push(`--url ${url || "<URL>"}`);
   if (apiToken)       p.push(`--api-token ${apiToken}`);
-  if (wpAuth && v4()) p.push(`--wp-auth ${wpAuth}`);
+  if (wpAuth && v4()) p.push(`--wp-auth ${wpAuth.includes(" ") ? `'${wpAuth}'` : wpAuth}`);
 
-  // Enumeration — check for incompatible groups
-  const ENUM_GROUPS = [
-    { opts: ["vp","ap","p"],  label: "plugins" },
-    { opts: ["vt","at","t"],  label: "temas"   },
-  ];
+  // Enumeration — detect incompatible groups in one pass
   const sel = [...document.querySelectorAll("#enumGrid input:checked")].map(i => i.value);
-  const conflicts = [];
+  const conflicts    = [];
+  const conflictVals = new Set();
   ENUM_GROUPS.forEach(g => {
     const hits = sel.filter(v => g.opts.includes(v));
-    if (hits.length > 1) conflicts.push(`${g.label}: ${hits.map(v => `[${v}]`).join(" + ")}`);
+    if (hits.length > 1) {
+      conflicts.push(`${g.label}: ${hits.map(v => `[${v}]`).join(" + ")}`);
+      hits.forEach(v => conflictVals.add(v));
+    }
   });
+  document.querySelectorAll("#enumGrid .check-item").forEach(item =>
+    item.classList.toggle("conflict", conflictVals.has(item.dataset.val))
+  );
   const conflictEl  = document.getElementById("enumConflict");
   const conflictMsg = document.getElementById("enumConflictMsg");
-  // Mark / unmark conflicting check items visually
-  const conflictVals = new Set(
-    ENUM_GROUPS.flatMap(g => {
-      const hits = sel.filter(v => g.opts.includes(v));
-      return hits.length > 1 ? hits : [];
-    })
-  );
-  document.querySelectorAll("#enumGrid .check-item").forEach(item => {
-    item.classList.toggle("conflict", conflictVals.has(item.dataset.val));
-  });
 
-  if (conflicts.length) {
+  const hasConflict = conflicts.length > 0;
+  document.querySelector(".command-wrapper").classList.toggle("has-conflict", hasConflict);
+  document.getElementById("copyBtn").disabled = hasConflict;
+
+  if (hasConflict) {
     conflictMsg.textContent = `Opciones incompatibles — WPScan abortará el scan. ${conflicts.join(" / ")}. Selecciona solo una opción por grupo.`;
     conflictEl.style.display = "flex";
   } else {
@@ -1448,12 +1481,34 @@ function generate() {
   if ($c("enumAll")) {
     p.push("--enumerate");
   } else {
-    if (sel.length) p.push(`--enumerate ${sel.join(",")}`);
+    // Apply user/media ranges if the corresponding option is selected
+    const userRange  = $v("userRange");
+    const mediaRange = $v("mediaRange");
+    const mappedSel  = sel.map(v => {
+      if (v === "u" && userRange  && userRange  !== "25")  return `u[1-${userRange}]`;
+      if (v === "m" && mediaRange && mediaRange !== "100") return `m[1-${mediaRange}]`;
+      return v;
+    });
+    if (mappedSel.length) p.push(`--enumerate ${mappedSel.join(",")}`);
   }
 
-  // Detection
+  const isStealthy = $c("stealthy");
+
+  // Stealthy UI: dim implied toggles and warn on aggressive contradiction
+  const showImplied = d => d.style.display = isStealthy ? "" : "none";
+  showImplied(document.getElementById("badge-randomUA"));
+  showImplied(document.getElementById("badge-noBanner"));
+  document.getElementById("ti-randomUA").classList.toggle("implied", isStealthy);
+  document.getElementById("ti-noBanner").classList.toggle("implied", isStealthy);
+
+  if (isStealthy && S.detectionMode === "aggressive") {
+    conflicts.push("--stealthy implica passive pero el modo de detección es aggressive");
+    conflictVals.add("__stealthy_aggressive__");
+  }
+
+  // Detection — skip --detection-mode passive if --stealthy already implies it
   const dm = S.detectionMode;
-  if (dm && dm !== "mixed") p.push(`--detection-mode ${dm}`);
+  if (dm && dm !== "mixed" && !(isStealthy && dm === "passive")) p.push(`--detection-mode ${dm}`);
   const pd  = $v("pluginsDetection");        if (pd)  p.push(`--plugins-detection ${pd}`);
   const pvd = $v("pluginsVersionDetection"); if (pvd) p.push(`--plugins-version-detection ${pvd}`);
   const td  = $v("themesDetection");         if (td)  p.push(`--themes-detection ${td}`);
@@ -1489,7 +1544,7 @@ function generate() {
   if (proxyAuth) p.push(`--proxy-auth ${proxyAuth}`);
   if (httpAuth)  p.push(`--http-auth ${httpAuth}`);
   const ua = $v("userAgent"); if (ua) p.push(`--user-agent "${ua}"`);
-  if ($c("randomUserAgent"))             p.push("--random-user-agent");
+  if ($c("randomUserAgent") && !isStealthy) p.push("--random-user-agent");
   if ($c("disableTls"))                  p.push("--disable-tls-checks");
   if ($c("followRedirect"))              p.push("--follow-redirection");
   if ($c("proxyTargetOnly") && v4())     p.push("--proxy-target-only");
@@ -1499,7 +1554,7 @@ function generate() {
   const fmt = $v("outputFormat"); if (fmt) p.push(`--format ${fmt}`);
   const of  = $v("outputFile");   if (of)  p.push(`--output ${of}`);
   if ($c("verbose"))  p.push("--verbose");
-  if ($c("noBanner")) p.push("--no-banner");
+  if ($c("noBanner") && !isStealthy) p.push("--no-banner");
   if ($c("noUpdate")) p.push("--no-update");
 
   // Advanced
@@ -1533,7 +1588,7 @@ function esc(s) {
 
 /* ── Copy ── */
 function copyCommand() {
-  if (!window._cmd) return;
+  if (!window._cmd || document.getElementById("copyBtn").disabled) return;
   navigator.clipboard.writeText(window._cmd).then(() => {
     const btn = document.getElementById("copyBtn");
     document.getElementById("copyIcon").querySelector("use").setAttribute("href","#ic-check");
@@ -1551,6 +1606,7 @@ function copyCommand() {
 function resetAll() {
   ["url","wpAuth","scope","wpContentDir","excludeVulns",
    "threads","maxRetries","requestTimeout","connectTimeout","maxScanDuration",
+   "userRange","mediaRange",
    "usernames","passwords","loginUri","wordlistSkip",
    "proxy","proxyAuth","httpAuth","userAgent","outputFile","extraFlags"]
     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
@@ -1594,7 +1650,7 @@ function applyPreset(type) {
   }
   if (type === "stealth") { checkEnum(["vp","vt","u"]); setDetMode("passive"); document.getElementById("stealthy").checked = true; }
   if (type === "auth" && v4()) {
-    checkEnum(["vp","ap","vt","at","u"]); setDetMode("passive");
+    checkEnum(["ap","at","u"]); setDetMode("passive");
     document.getElementById("url").value = "https://ejemplo.com";
     document.getElementById("wpAuth").value = 'admin:"xxxx xxxx xxxx xxxx"';
   }

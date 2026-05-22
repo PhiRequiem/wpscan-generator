@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.3.0] - 2026-05-21
+
+### Fixed
+- `ENUM_GROUPS` se declaraba dentro de `generate()` recreándose en cada keystroke — movido a constante de módulo
+- `copyCommand()` no verificaba el estado `disabled` del botón — un llamado directo podía copiar un comando inválido
+- `--wp-auth` con Application Passwords (que contienen espacios) no se escapaba para la shell — ahora se envuelve en comillas simples automáticamente cuando el valor contiene espacios
+- Los dos loops de detección de conflictos hacían el mismo trabajo — unificados en un solo `forEach`
+- `userRange` / `mediaRange` tenían `width:180px` fijo — cambiado a `max-width` para no romper en móvil
+
+### Added
+- Los toggles **Random User-Agent** y **No Banner** se dimean visualmente con badge `vía --stealthy` cuando `--stealthy` está activo, indicando que ya están cubiertos
+- Conflicto detectado cuando `--stealthy` + modo de detección `aggressive` están activos simultáneamente (contradicción: stealthy implica passive)
+
+---
+
+## [1.2.0] - 2026-05-21
+
+### Fixed
+- Preset "Con Auth" seleccionaba `vp+ap` y `vt+at` simultáneamente, generando conflicto inmediato al aplicarlo
+- `--stealthy` emitía flags redundantes: ya implica `--detection-mode passive`, `--random-user-agent` y `--no-banner`; ahora esos flags se suprimen automáticamente cuando stealthy está activo
+- Comando seguía generándose (y siendo copiable) aunque hubiera conflictos de enumeración; ahora el botón copiar se deshabilita y el terminal muestra borde rojo
+- El tick interno del checkbox no cambiaba de color al entrar en conflicto
+- `display:none` duplicado en los inline styles de `#saveTokenNotice` y `#enumConflict`
+
+### Added
+- Rango de usuarios `-e u[1-X]`: campo para especificar hasta qué ID de usuario enumerar (default 25)
+- Rango de medios `-e m[1-X]`: campo para especificar el rango de IDs de media (default 100)
+- `<meta name="description">` para GitHub Pages / SEO
+
+---
+
 ## [1.1.0] - 2026-05-21
 
 ### Added
