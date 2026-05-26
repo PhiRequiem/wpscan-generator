@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.5.0] - 2026-05-25
+
+### Fixed
+- `shellQuote` solo cotizaba valores con espacios y no escapaba comillas simples internas — un valor como `my list's.txt` producía shell roto o inyección; ahora la función envuelve en comillas simples y escapa las internas con `'\''`, y también activa el cotizado para cualquier metacarácter de shell (`$`, backtick, `;`, `|`, `"`, etc.)
+- `--user-agent` era el único campo usando comillas dobles en lugar de `shellQuote`, exponiendo la expansión de variables de shell (`$VAR`) e inyección de argumentos mediante `"`; ahora usa `shellQuote` consistentemente
+- `--url`, `--proxy`, `--login-uri`, `--password-attack` y `--api-token` no pasaban por `shellQuote` a pesar de ser campos de texto libre; ahora todos los valores user-supplied se shell-cotizan
+- El set `sens` (indicador de color rojo para credenciales) almacenaba los valores sin cotizar, pero `renderCmd` los comparaba contra los valores ya cotizados del comando — credenciales con espacio se mostraban en naranja en lugar de rojo; ahora `sens` almacena los valores en su forma cotizada
+- El conflicto `--stealthy` + `aggressive` no resaltaba en rojo los controles responsables (el toggle Stealthy y el radio aggressive) porque el sentinel `__stealthy_aggressive__` nunca coincidía con ningún `.check-item`; ahora se aplica `.conflict` directamente a esos elementos con CSS específico para `.radio-item.conflict` y `.toggle-item.conflict`
+
+---
+
 ## [1.4.0] - 2026-05-22
 
 ### Fixed

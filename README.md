@@ -1,70 +1,81 @@
 # WPScan Command Generator
 
-A single-file web app for building WPScan CLI commands visually.  
-No data is sent anywhere. No commands are executed. 100% offline.
+Generador visual de comandos WPScan. Selecciona las opciones y copia el comando listo para ejecutar.  
+No envía datos a ningún servidor. No ejecuta nada. 100% offline.
 
-**[Live demo →](https://phirequiem.github.io/wpscan-generator/)**
+**[Demo en vivo →](https://phirequiem.github.io/wpscan-generator/)**
 
 ---
 
-## Usage
+## Uso
 
-Open directly in any modern browser — no server, no install, no internet required.
+Abre directamente en cualquier navegador moderno — sin servidor, sin instalación, sin internet.
 
 ```bash
-git clone https://github.com/phirequiem/wpscan-generator
+git clone https://github.com/PhiRequiem/wpscan-generator
 open wpscan-generator/index.html
 ```
 
-Or just download `index.html` and open it.
+O descarga solo `index.html` y ábrelo.
 
 ---
 
-## Features
+## Funcionalidades
 
 | | |
 |---|---|
-| **Version toggle** | Switch between WPScan v4.0 (default) and v3.x |
-| **Enumeration** | All 12 `-e` options with descriptions and tooltips |
-| **Conflict detection** | Warns when incompatible options are combined (e.g. `vp + ap`) |
-| **Detection modes** | Global (passive / mixed / aggressive) + per-type overrides |
-| **Brute force** | Usernames, passwords, attack type, `--wordlist-skip` to resume |
-| **HTTP / Network** | Proxy, auth, user-agent, `--proxy-target-only`, SAML support |
-| **Output** | `json`, `jsonl` real-time streaming, `cli-no-color`, `xml` |
-| **API token storage** | Opt-in localStorage save with browser warning |
-| **Presets** | Quick, Full, Stealth, With Auth |
-| **Command preview** | Syntax-highlighted, one-click copy |
+| **Versiones** | Soporte completo para WPScan v4.0 (por defecto) y v3.x |
+| **Enumeración** | Las 12 opciones de `-e` con descripciones y tooltips |
+| **Detección de conflictos** | Avisa cuando se combinan opciones incompatibles (ej. `vp + ap`) |
+| **Modos de detección** | Global (passive / mixed / aggressive) + overrides por tipo |
+| **Fuerza bruta** | Usuarios, contraseñas, tipo de ataque, `--wordlist-skip` para reanudar |
+| **HTTP / Red** | Proxy, autenticación, user-agent, `--proxy-target-only`, SAML |
+| **Output** | `json`, `jsonl` streaming en tiempo real, `cli-no-color`, `xml` |
+| **API Token** | Guardado opcional en localStorage con advertencia del navegador |
+| **Presets** | Rápido, Completo, Stealth, Con Auth |
+| **Vista previa** | Comando con sintaxis coloreada y copia con un clic |
+| **Cambio de versión limpio** | Al cambiar entre v4/v3 se limpian automáticamente los parámetros exclusivos de la versión anterior |
 
 ---
 
-## WPScan v4.0 support
+## Novedades v4.0
 
-Key v4.0 changes reflected in this tool:
+Funcionalidades de WPScan v4.0 reflejadas en la herramienta:
 
-| Feature | Flag |
+| Funcionalidad | Flag |
 |---|---|
-| Authentication-based scanning via REST API | `--wp-auth` |
-| Resume brute force from a line offset | `--wordlist-skip` |
-| Auto-retry failed requests | `--max-retries` |
-| Route only the target through the proxy | `--proxy-target-only` |
-| SAML-authenticated sites | `--expect-saml` |
-| Exclude specific vulnerability IDs | `--exclude-vulns` |
-| Backup folders enumeration | `-e bf` |
-| Real-time streaming output | `--format jsonl` |
-| Minimal default scan (breaking change) | no auto plugins / config backups |
+| Escaneo autenticado vía REST API | `--wp-auth` |
+| Reanudar fuerza bruta desde un offset | `--wordlist-skip` |
+| Reintentos automáticos de requests fallidos | `--max-retries` |
+| Proxy solo para el target | `--proxy-target-only` |
+| Sitios con autenticación SAML | `--expect-saml` |
+| Excluir IDs de vulnerabilidades | `--exclude-vulns` |
+| Enumeración de carpetas de backup | `-e bf` |
+| Output streaming en tiempo real | `--format jsonl` |
+| Escaneo mínimo por defecto (cambio breaking) | sin plugins ni config backups automáticos |
 
-**Removed in v4.0** (shown only in v3 mode):  
+**Eliminados en v4.0** (solo disponibles en modo v3):  
 `--config-backups-detection`, `--db-exports-detection`, `--timthumbs-detection`, `--medias-detection`
+
+---
+
+## WPScan
+
+- **Web oficial:** [wpscan.com](https://wpscan.com/)
+- **Instalación:** [github.com/wpscanteam/wpscan#installation](https://github.com/wpscanteam/wpscan#installation)
+- **Obtener API Token (gratis):** [wpscan.com/register](https://wpscan.com/register)
+
+El API Token es necesario para obtener información de vulnerabilidades de la base de datos de WPScan. El plan gratuito incluye 25 consultas diarias.
 
 ---
 
 ## Stack
 
-Plain HTML + CSS + JavaScript — no frameworks, no build step, no dependencies.  
-Single file: `index.html` + `favicon.svg`.
+HTML + CSS + JavaScript plano — sin frameworks, sin build step, sin dependencias.  
+Archivo único: `index.html` + `favicon.svg`.
 
 ---
 
-## License
+## Licencia
 
 MIT

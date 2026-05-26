@@ -122,6 +122,49 @@
     }
     .header-text h1 { font-size: 20px; font-weight: 700; }
     .header-text p  { font-size: 13px; color: var(--text-muted); margin-top: 1px; }
+    .header-links {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .header-link {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      text-decoration: none;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .header-link:hover { border-color: var(--border-focus); color: var(--blue-mid); }
+    .footer {
+      max-width: 960px;
+      margin: 24px auto 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-link {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-link:hover { color: var(--blue-mid); }
 
     /* ── Version toggle ── */
     .ver-toggle {
@@ -268,6 +311,8 @@
     .check-item.active  { border-color: var(--green); background: var(--green-bg); }
     .check-item.conflict { border-color: var(--red) !important; background: var(--red-bg) !important; }
     .check-item.conflict .check-dot { border-color: var(--red) !important; background: var(--red) !important; }
+    .radio-item.conflict { border-color: var(--red) !important; background: var(--red-bg) !important; color: var(--red) !important; }
+    .toggle-item.conflict .toggle-title { color: var(--red) !important; }
     .check-item input { display: none; }
     .check-dot {
       width: 16px; height: 16px;
@@ -587,6 +632,9 @@
     <symbol id="ic-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="4,6 8,10 12,6"/>
     </symbol>
+    <symbol id="ic-github" viewBox="0 0 16 16">
+      <path fill="currentColor" fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+    </symbol>
   </defs>
 </svg>
 
@@ -600,6 +648,11 @@
   <div class="header-text">
     <h1>WPScan Command Generator</h1>
     <p>Genera tu comando sin ejecutar nada &middot; 100% offline</p>
+  </div>
+  <div class="header-links">
+    <a class="header-link" href="https://github.com/PhiRequiem/wpscan-generator" target="_blank" rel="noopener">
+      <svg class="icon" width="13" height="13"><use href="#ic-github"/></svg> Código fuente
+    </a>
   </div>
   <div class="ver-toggle">
     <button class="ver-btn" data-v="3" onclick="setVersion(3)">v3.x</button>
@@ -1234,6 +1287,21 @@
 
 </div>
 
+<footer class="footer">
+  <a class="footer-link" href="https://wpscan.com/" target="_blank" rel="noopener">
+    <svg class="icon" width="13" height="13"><use href="#ic-logo"/></svg> WPScan
+  </a>
+  <a class="footer-link" href="https://github.com/wpscanteam/wpscan#installation" target="_blank" rel="noopener">
+    <svg class="icon" width="13" height="13"><use href="#ic-terminal"/></svg> Instalación WPScan
+  </a>
+  <a class="footer-link" href="https://wpscan.com/register" target="_blank" rel="noopener">
+    <svg class="icon" width="13" height="13"><use href="#ic-key"/></svg> Obtener API Token
+  </a>
+  <a class="footer-link" href="https://github.com/PhiRequiem/wpscan-generator" target="_blank" rel="noopener">
+    <svg class="icon" width="13" height="13"><use href="#ic-github"/></svg> Código fuente
+  </a>
+</footer>
+
 <script>
 /* ── State ── */
 const S = { version: 4, detectionMode: "passive" };
@@ -1393,8 +1461,21 @@ function posTooltip(tt, target) {
 }
 
 /* ── Version switch ── */
+function clearVersionFields(attr) {
+  document.querySelectorAll(`[${attr}] input[type=text], [${attr}] input[type=number]`)
+    .forEach(i => { i.value = ""; });
+  document.querySelectorAll(`[${attr}] input[type=checkbox]`)
+    .forEach(i => { i.checked = false; });
+  document.querySelectorAll(`[${attr}] select`)
+    .forEach(s => { s.selectedIndex = 0; });
+  document.querySelectorAll(`.check-item[${attr}]`)
+    .forEach(item => { item.querySelector("input").checked = false; item.classList.remove("active"); });
+}
+
 function setVersion(v) {
   S.version = v;
+  if (v === 3) clearVersionFields("data-v4only");
+  if (v === 4) clearVersionFields("data-v3only");
   document.querySelectorAll(".ver-btn").forEach(btn => {
     const bv = parseInt(btn.dataset.v);
     btn.className = "ver-btn" + (bv === v ? (v === 4 ? " v4" : " v3") : "");
@@ -1436,7 +1517,10 @@ function setRadio(gId, value, el) {
 const v4 = () => S.version === 4;
 const $v = id => (document.getElementById(id)?.value || "").trim();
 const $c = id => document.getElementById(id)?.checked || false;
-const shellQuote = v => v.includes(" ") ? `'${v}'` : v;
+const shellQuote = v => {
+  if (!/[^a-zA-Z0-9_./:@-]/.test(v)) return v;
+  return "'" + v.replace(/'/g, "'\\''") + "'";
+};
 
 /* ── Generate command ── */
 function generate() {
@@ -1445,11 +1529,11 @@ function generate() {
   const wpAuth    = $v("wpAuth");
   const httpAuth  = $v("httpAuth");
   const proxyAuth = $v("proxyAuth");
-  const sens = new Set([apiToken, wpAuth, httpAuth, proxyAuth].filter(Boolean));
+  const sens = new Set([apiToken, wpAuth, httpAuth, proxyAuth].filter(Boolean).map(shellQuote));
 
   const p = ["wpscan"];
-  p.push(`--url ${url || "<URL>"}`);
-  if (apiToken)       p.push(`--api-token ${apiToken}`);
+  p.push(`--url ${url ? shellQuote(url) : "<URL>"}`);
+  if (apiToken)       p.push(`--api-token ${shellQuote(apiToken)}`);
   if (wpAuth && v4()) p.push(`--wp-auth ${shellQuote(wpAuth)}`);
 
   // Enumeration — detect incompatible groups in one pass
@@ -1464,10 +1548,12 @@ function generate() {
       hits.forEach(v => conflictVals.add(v));
     }
   });
-  if (isStealthy && S.detectionMode === "aggressive") {
+  const steaAggrConflict = isStealthy && S.detectionMode === "aggressive";
+  if (steaAggrConflict) {
     conflicts.push("--stealthy implica passive pero el modo de detección es aggressive");
-    conflictVals.add("__stealthy_aggressive__");
   }
+  document.getElementById("stealthy").closest(".toggle-item").classList.toggle("conflict", steaAggrConflict);
+  document.querySelector('#detectionMode input[value="aggressive"]').closest(".radio-item").classList.toggle("conflict", steaAggrConflict);
   document.querySelectorAll("#enumGrid .check-item").forEach(item =>
     item.classList.toggle("conflict", conflictVals.has(item.dataset.val))
   );
@@ -1535,15 +1621,15 @@ function generate() {
   // Brute force
   const un = $v("usernames"); if (un) p.push(`--usernames ${shellQuote(un)}`);
   const pw = $v("passwords"); if (pw) p.push(`--passwords ${shellQuote(pw)}`);
-  const pa = $v("passwordAttack"); if (pa) p.push(`--password-attack ${pa}`);
+  const pa = $v("passwordAttack"); if (pa) p.push(`--password-attack ${shellQuote(pa)}`);
   if (v4()) { const sk = $v("wordlistSkip"); if (sk && sk !== "0") p.push(`--wordlist-skip ${sk}`); }
-  const lu = $v("loginUri"); if (lu && lu !== "/wp-login.php") p.push(`--login-uri ${lu}`);
+  const lu = $v("loginUri"); if (lu && lu !== "/wp-login.php") p.push(`--login-uri ${shellQuote(lu)}`);
 
   // HTTP
-  const pr = $v("proxy"); if (pr) p.push(`--proxy ${pr}`);
+  const pr = $v("proxy"); if (pr) p.push(`--proxy ${shellQuote(pr)}`);
   if (proxyAuth) p.push(`--proxy-auth ${shellQuote(proxyAuth)}`);
   if (httpAuth)  p.push(`--http-auth ${shellQuote(httpAuth)}`);
-  const ua = $v("userAgent"); if (ua) p.push(`--user-agent "${ua}"`);
+  const ua = $v("userAgent"); if (ua) p.push(`--user-agent ${shellQuote(ua)}`);
   if ($c("randomUserAgent") && !isStealthy) p.push("--random-user-agent");
   if ($c("disableTls"))                  p.push("--disable-tls-checks");
   if ($c("followRedirect"))              p.push("--follow-redirection");
